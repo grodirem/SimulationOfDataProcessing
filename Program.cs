@@ -1,4 +1,6 @@
-﻿namespace SimulationOfDataProcessing;
+﻿using System.Diagnostics;
+
+namespace SimulationOfDataProcessing;
 
 internal class Program
 {
@@ -9,6 +11,7 @@ internal class Program
 
         Console.WriteLine();
         Console.WriteLine("Asynchronous processing");
+
         await RunAsynchronousProcessing();
 
         Console.WriteLine();
@@ -25,41 +28,46 @@ internal class Program
 
     private static void RunSynchronousProcessing()
     {
-        var startTime = DateTime.Now;
+        var stopwatch = Stopwatch.StartNew();
 
         Console.WriteLine(ProcessData("F1"));
         Console.WriteLine(ProcessData("F2"));
         Console.WriteLine(ProcessData("F3"));
 
-        var totalTime = DateTime.Now - startTime;
-        Console.WriteLine($"Total duration: {totalTime.TotalSeconds:F1} seconds");
+        stopwatch.Stop();
+        Console.WriteLine($"Total duration: {stopwatch.Elapsed.TotalSeconds:F2} seconds");
     }
 
     private static async Task RunAsynchronousProcessing()
     {
-        var startTime = DateTime.Now;
+        var stopwatch = Stopwatch.StartNew();
 
-        var task1 = ProcessDataAsync("F1");
-        var task2 = ProcessDataAsync("F2");
-        var task3 = ProcessDataAsync("F3");
+        var tasks = new List<Task<string>>
+        {
+            ProcessDataAsync("F1"),
+            ProcessDataAsync("F2"),
+            ProcessDataAsync("F3")
+        };
 
-        var tasks = new[] { task1, task2, task3 };
-        while (tasks.Length > 0)
+        while (tasks.Count > 0)
         {
             var finishedTask = await Task.WhenAny(tasks);
+
             Console.WriteLine(await finishedTask);
 
-            tasks = tasks.Where(t => t != finishedTask).ToArray();
+            tasks.Remove(finishedTask);
         }
 
-        var totalTime = DateTime.Now - startTime;
-        Console.WriteLine($"Total duration: {totalTime.TotalSeconds:F1} seconds");
+        stopwatch.Stop();
+        Console.WriteLine($"Total duration: {stopwatch.Elapsed.TotalSeconds:F2} seconds");
     }
 
     private static async Task<string> ProcessDataAsync(string dataName)
     {
         Console.WriteLine($"Processing started: {dataName}");
+
         await Task.Delay(3000);
+
         return $"'{dataName}' processing was completed in 3 seconds";
     }
 }

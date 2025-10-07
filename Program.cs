@@ -53,9 +53,10 @@ internal class Program
         {
             var finishedTask = await Task.WhenAny(tasks);
 
-            Console.WriteLine(await finishedTask);
-
+            var result = await finishedTask;  
+            Console.WriteLine(result); 
             tasks.Remove(finishedTask);
+
         }
 
         stopwatch.Stop();
